@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+  <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+        <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes" />
+
+
+     <!-- Add to home screen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Search Parking">
+  <link rel="apple-touch-icon" href="assets/icons/icon-152x152.png">
+
+  <meta name="msapplication-TileImage" content="assets/icons/icon-144x144.png">
+  <meta name="msapplication-TileColor" content="#2F3BA2">
+
+        <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <link rel="manifest" href="./manifest.json">
+    <title>Search Parking</title>
+    <style>
+      /* Optional: Makes the sample page fill the window. */
+      html, body, #map {
+      	height: 100%;
+    	width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #map {
+        position: relative;
+        }
+
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #1753A1;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+.sidenav a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidenav a:hover, .offcanvas a:focus{
+    color: #f1f1f1;
+}
+
+.sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+#main {
+    transition: margin-left .5s;
+/*    padding: 16px;*/
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+
+.glyphicon {  margin-bottom: 10px;margin-right: 10px;}
+
+small {
+display: block;
+line-height: 1.428571429;
+color: #999;
+}
+
+      .controls {
+        margin-top: 10px;
+        border: 1px solid transparent;
+        border-radius: 2px 0 0 2px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        height: 32px;
+        outline: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      #pac-input {
+        background-color: #fff;
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+        
+        text-overflow: ellipsis;
+
+      }
+
+      #pac-input:focus {
+        border-color: #4d90fe;
+      }
+
+      .pac-container {
+        font-family: Roboto;
+      }
+
+      #type-selector {
+        color: #fff;
+        background-color: #4d90fe;
+        padding: 5px 11px 0px 11px;
+      }
+
+      #type-selector label {
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+      }
+      #target {
+        width: 345px;
+      }
+
+#legend {
+  background: white;
+  padding: 10px;
+  top: 36px !important;
+  right: 5px !important;
+}
+.display-flex {
+  display: flex;
+}
+.legend-box {
+  width: 10px;
+  height: 10px;
+  border: 1px solid;
+  margin-top: 2px;
+  margin-right: 5px;
+}
+
+
+
+    </style>
+
+  </head>
+  <body>
+
+  <div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <a href="#">Sobre</a>
+  <a href="#">Pesquisa Avançada</a>
+  <a href="#">Efetuar Login</a>
+</div>
+
+<div id="main">
+  <span style="font-size:30px;cursor:pointer" onclick="openNav()"><span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span></span>
+</div>
+
+<div class="row">
+  <div class="ccol-xs-9">
+      <input id="pac-input" class="form-control" type="text" placeholder="Informe o endereço desejado...">
+  </div>
+</div>
+
+<!-- <input id="pac-input" class="form-control" type="text" placeholder="Informe o endereço desejado..."> -->
+
+<div id="map"></div> 
+
+<div id="legend">
+  Legenda:
+  <div class="display-flex"><div class="legend-box" style="background: #65BA4A;"></div> Com vagas</div>
+  <div class="display-flex"><div class="legend-box" style="background: #F76053;"></div> Sem vagas</div>
+</div>
+
+  </body>
+  <script>
+function openNav() {
+    document.getElementById("mySidenav").style.width = "250px";
+    document.getElementById("main").style.marginLeft = "250px";
+}
+
+function closeNav() {
+    document.getElementById("mySidenav").style.width = "0";
+    document.getElementById("main").style.marginLeft= "0";
+}
+</script>
+
+    <script>
+      function initMap() {
+
+      	var minZoomLevel = 5;
+        var map = new google.maps.Map(document.getElementById('map'), {
+        	center: {lat: -34.397, lng: 150.644},
+        	zoom:16,
+          	maxZoom:17,
+          	minZoom:15,
+          	// zoomControl: false,
+          	// mapTypeControl: false,
+          	// panControl: false,
+          	// disableDefaultUI: true,
+          	// navigationControl: true,
+          	// streetViewControl: false,
+          	// scaleControl: true,
+          	// fullscreenControl:true,
+
+          	zoomControl: true,
+          	mapTypeControl: false,
+          	panControl: true,
+          	disableDefaultUI: true,
+          	navigationControl: false,
+          	streetViewControl: false,
+          	scaleControl: true,
+          	fullscreenControl:true,
+          	overviewMapControl:false,
+            rotateControl:true,
+
+
+          	//scrollwheel: false,
+        	mapTypeId: google.maps.MapTypeId.ROADMAP //Este tipo de mapa exibe um mapa de ruas normal.
+          /*
+          HYBRID  Este tipo de mapa exibe uma camada transparente de ruas principais em imagens de satélite.
+          ROADMAP Este tipo de mapa exibe um mapa de ruas normal.
+          SATELLITE Este tipo de mapa exibe imagens de satélite.
+          TERRAIN Este tipo de mapa exibe mapas com características físicas como terreno e vegetação.
+          */
+         });
+
+
+
+        // Create the search box and link it to the UI element.
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+        map.controls[google.maps.ControlPosition.RIGHT_TOP].push(document.getElementById('legend'));
+
+        // Bias the SearchBox results towards current map's viewport.
+        map.addListener('bounds_changed', function() {
+          searchBox.setBounds(map.getBounds());
+        });
+
+        var markers = [];
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        searchBox.addListener('places_changed', function() {
+          var places = searchBox.getPlaces();
+
+          if (places.length == 0) {
+            return;
+          }
+
+          // Clear out the old markers.
+          markers.forEach(function(marker) {
+            marker.setMap(null);
+          });
+          markers = [];
+
+          // For each place, get the icon, name and location.
+          var bounds = new google.maps.LatLngBounds();
+          places.forEach(function(place) {
+            if (!place.geometry) {
+              console.log("Returned place contains no geometry");
+              return;
+            }
+
+            var iconBase = 'https://maps.google.com/mapfiles/kml/pushpin/';
+            var icon = {
+              url: place.icon,
+              size: new google.maps.Size(71, 71),
+              origin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(17, 34),
+              scaledSize: new google.maps.Size(25, 25)
+            };
+
+            // Create a marker for each place.
+            markers.push(new google.maps.Marker({
+              map: map,
+              icon: iconBase + 'ylw-pushpin.png',
+              title: place.name,
+              position: place.geometry.location
+            }));
+
+            if (place.geometry.viewport) {
+              // Only geocodes have viewport.
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
+          });
+          map.fitBounds(bounds);
+        });
+       
+
+        var infoWindow = new google.maps.InfoWindow({map: map});
+
+        // Try HTML5 geolocation.
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            infoWindow.setPosition(pos);
+            infoWindow.setContent('Você');
+            map.setCenter(pos);            
+
+            adMarkersdinamic(map); //Chamada para exibir os estacionamentos proximo a geolocalização
+
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+      }
+
+      function adMarkersdinamic(map){
+        xhr = new XMLHttpRequest();
+
+        xhr.open('GET', 'https://tecnoweb.eti.br/tcc/estacionamento.php');
+        ///xhr.open('GET', './demo_files/estacionamento.json');
+        xhr.onload = function() {
+            if (xhr.status === 200 ) {
+                var res = xhr.responseText;
+                var lista = JSON.parse(res);
+                lista.forEach(function(object) {
+                  addMarker(map,object);
+                });
+
+            }
+            else if (xhr.status !== 200) {
+                alert('Request failed.  Returned status of ' + xhr.status);
+            }
+        };
+        xhr.send();
+
+      }
+
+		//var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
+		var iconBase = 'https://maps.google.com/mapfiles/kml/paddle/';
+      function addMarker(map,obj) {
+        // Add the marker at the clicked location, and add the next-available label
+        // from the array of alphabetical characters.
+        console.log(obj);
+
+        var llat = parseFloat(obj.latitude);
+        var llang = parseFloat(obj.longitude);
+
+        var position = { lat: llat, lng: llang };
+        console.log(position);
+
+        var icone;
+        if (obj.numero_vagas <= 0) {
+        	icone = iconBase + 'red-circle.png';
+        }else{
+        	icone = iconBase + 'grn-circle.png';
+        }
+
+        var marker = new google.maps.Marker({
+          position: position,
+          title: '>'+obj.estacionamento,
+          map: map,
+          icon: icone
+        });
+      }
+
+      function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: o serviço de Geolocalização falhou.' :
+                              'Error: Seu navegador não\' suporta geolocalização.');
+      }
+
+
+
+    </script>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBBhEbgb2XS80KdDP2vli4sY3kQGFZpYiQ&libraries=places&callback=initMap"></script>
+      <!-- JS Files  -->
+  <script src="./app.js"></script>
+</html>
